@@ -6,6 +6,21 @@ import {
   questions,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type PageProps = {
   params: {
@@ -38,22 +53,35 @@ export default async function ApplicationPage({ params }: PageProps) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">
+      <h1 className="text-2xl font-bold mb-4">
         Application for {application.application_forms.name}
       </h1>
-      <p>Submitted at: {application.applications.createdAt.toLocaleString()}</p>
-
-      <div className="mt-8">
-        <h2 className="text-xl font-bold">Answers</h2>
-        <ul>
-          {formQuestions.map(({ questions: question }) => (
-            <li key={question.id}>
-              <strong>{question.text}: </strong>
-              {answers[question.id] || "Not answered"}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Application Details</CardTitle>
+          <CardDescription>
+            Submitted at: {application.applications.createdAt.toLocaleString()}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Question</TableHead>
+                <TableHead>Answer</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {formQuestions.map(({ questions: question }) => (
+                <TableRow key={question.id}>
+                  <TableCell>{question.text}</TableCell>
+                  <TableCell>{answers[question.id] || "Not answered"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

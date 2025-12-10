@@ -2,6 +2,31 @@ import { db } from "@/db";
 import { applicationForms, questions, applicationQuestions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 
 type PageProps = {
   params: {
@@ -47,36 +72,71 @@ export default async function FormPage({ params }: PageProps) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Edit Form: {form.name}</h1>
-      <p>Shareable Link: /apply/{form.shareableLink}</p>
+      <h1 className="text-2xl font-bold mb-4">Edit Form: {form.name}</h1>
+      <p className="mb-4">
+        Shareable Link:{" "}
+        <a
+          href={`/apply/${form.shareableLink}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          /apply/{form.shareableLink}
+        </a>
+      </p>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-bold">Add Question</h2>
-        <form action={addQuestion} className="flex flex-col gap-4 mt-4">
-          <input type="text" name="text" placeholder="Question Text" className="border p-2" />
-          <select name="type" className="border p-2">
-            <option value="text">Text</option>
-            <option value="textarea">Textarea</option>
-            <option value="radio">Radio</option>
-            <option value="checkbox">Checkbox</option>
-          </select>
-          <textarea name="options" placeholder="Options (JSON array)" className="border p-2"></textarea>
-          <button type="submit" className="bg-blue-500 text-white p-2">
-            Add Question
-          </button>
-        </form>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Add Question</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={addQuestion} className="grid grid-cols-1 gap-4">
+            <Input name="text" placeholder="Question Text" />
+            <Select name="type">
+              <SelectTrigger>
+                <SelectValue placeholder="Question Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text">Text</SelectItem>
+                <SelectItem value="textarea">Textarea</SelectItem>
+                <SelectItem value="radio">Radio</SelectItem>
+                <SelectItem value="checkbox">Checkbox</SelectItem>
+              </SelectContent>
+            </Select>
+            <Textarea
+              name="options"
+              placeholder="Options (JSON array for radio/checkbox)"
+            />
+            <Button type="submit">Add Question</Button>
+          </form>
+        </CardContent>
+      </Card>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-bold">Questions</h2>
-        <ul>
-          {formQuestions.map(({ questions: question, application_questions: appQuestion }) => (
-            <li key={appQuestion.id}>
-              {appQuestion.order}. {question.text} ({question.type})
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>Questions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order</TableHead>
+                <TableHead>Text</TableHead>
+                <TableHead>Type</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {formQuestions.map(({ questions: q, application_questions: aq }) => (
+                <TableRow key={aq.id}>
+                  <TableCell>{aq.order}</TableCell>
+                  <TableCell>{q.text}</TableCell>
+                  <TableCell>{q.type}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
