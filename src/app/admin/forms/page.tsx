@@ -1,5 +1,6 @@
-import { db, applicationForms } from "@/db/mock";
-import Link from "next/link";
+import { db } from "@/db";
+import { applicationForms } from "@/db/schema";
+import { revalidatePath } from "next/cache";
 
 export default function FormsPage() {
   async function createForm(formData: FormData) {
@@ -7,7 +8,8 @@ export default function FormsPage() {
     const name = formData.get("name") as string;
     const shareableLink = Math.random().toString(36).substring(7);
 
-    applicationForms.push({ id: applicationForms.length + 1, name, shareableLink });
+    await db.insert(applicationForms).values({ name, shareableLink });
+    revalidatePath("/admin/forms");
   }
 
   return (
@@ -24,13 +26,6 @@ export default function FormsPage() {
           Create Form
         </button>
       </form>
-      <ul className="mt-4">
-        {applicationForms.map((form) => (
-          <li key={form.id}>
-            <Link href={`/admin/forms/${form.id}`}>{form.name}</Link>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
