@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:migrate": "tsx src/migrate.ts"
+    "db:migrate": "node -r dotenv/config ./node_modules/.bin/tsx src/migrate.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.1",
