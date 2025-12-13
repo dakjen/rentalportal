@@ -40,10 +40,12 @@ export const projectUserRelations = relations(projectUsers, ({ one }) => ({
 }));
 
 export const userRoleEnum = pgEnum("user_role", [
+  "super_admin",
   "admin",
   "investor",
   "owner",
   "property_management",
+  "marketing",
 ]);
 
 export const users = pgTable("users", {

@@ -8,6 +8,13 @@
       "when": 1765666621318,
       "tag": "0000_secret_susan_delgado",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1765666914913,
+      "tag": "0001_volatile_sersi",
+      "breakpoints": true
     }
   ]
 }
