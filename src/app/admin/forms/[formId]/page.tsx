@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -34,8 +33,18 @@ type PageProps = {
   };
 };
 
-export default async function FormPage({ params }: PageProps) {
+type QuestionType = "text" | "textarea" | "radio" | "checkbox" | "document_upload" | "secure_document_upload";
+
+export default async function FormPage({ params: rawParams }: PageProps) {
+  const params = await rawParams; // Await the params object
+  console.log("FormPage: params.formId =", params.formId);
   const formId = parseInt(params.formId);
+  console.log("FormPage: parsed formId =", formId);
+
+  if (isNaN(formId)) {
+    console.error("FormPage: Invalid formId in URL params:", params.formId);
+    return <div>Invalid Form ID</div>;
+  }
 
   const form = await db
     .select()
@@ -53,7 +62,7 @@ export default async function FormPage({ params }: PageProps) {
   async function addQuestion(formData: FormData) {
     "use server";
     const text = formData.get("text") as string;
-    const type = formData.get("type") as string;
+    const type = formData.get("type") as QuestionType; // Cast to QuestionType
     const options = formData.get("options") as string;
 
     const [newQuestion] = await db
@@ -101,6 +110,8 @@ export default async function FormPage({ params }: PageProps) {
                 <SelectItem value="textarea">Textarea</SelectItem>
                 <SelectItem value="radio">Radio</SelectItem>
                 <SelectItem value="checkbox">Checkbox</SelectItem>
+                <SelectItem value="document_upload">Document Upload</SelectItem>
+                <SelectItem value="secure_document_upload">Secure Document Upload</SelectItem>
               </SelectContent>
             </Select>
             <Textarea

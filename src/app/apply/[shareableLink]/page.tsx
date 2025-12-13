@@ -17,13 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -101,13 +95,20 @@ export default async function ApplyPage({ params }: PageProps) {
                     name={String(question.id)}
                   />
                 )}
+                {(question.type === "document_upload" || question.type === "secure_document_upload") && (
+                  <Input
+                    type="file"
+                    id={String(question.id)}
+                    name={String(question.id)}
+                  />
+                )}
                 {question.type === "radio" && (
                   <RadioGroup
                     id={String(question.id)}
                     name={String(question.id)}
                   >
                     {Array.isArray(question.options) &&
-                      question.options.map((option: any) => (
+                      question.options.map((option) => (
                         <div key={option} className="flex items-center space-x-2">
                           <RadioGroupItem value={option} id={`${question.id}-${option}`} />
                           <Label htmlFor={`${question.id}-${option}`}>
@@ -120,7 +121,7 @@ export default async function ApplyPage({ params }: PageProps) {
                 {question.type === "checkbox" && (
                   <div>
                     {Array.isArray(question.options) &&
-                      question.options.map((option: any) => (
+                      question.options.map((option) => (
                         <div key={option} className="flex items-center space-x-2">
                           <Checkbox
                             id={`${question.id}-${option}`}

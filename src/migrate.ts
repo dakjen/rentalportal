@@ -1,5 +1,4 @@
 import { migrate } from "drizzle-orm/neon-http/migrator";
-import { db } from "./db";
 import {neon} from "@neondatabase/serverless";
 import {drizzle} from "drizzle-orm/neon-http";
 
