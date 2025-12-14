@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { Building, FileUser, LayoutDashboard } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   return (
@@ -13,6 +15,13 @@ export default function HomePage() {
             <p className="text-muted-foreground md:text-xl text-[hsl(0_0%_26%)]">
               This platform brings leasing, marketing, applications, and ongoing operations into one clean, modern interface. It includes a fully built-in rental application tool, allowing prospects to apply directly through the platform while property managers review, score, and track applications from an admin dashboard. The system also supports a lightweight lease-up marketing module where users can create listings, manage leads, and track interest throughout pre-leasing. Beyond leasing, the platform is designed to grow into a broader asset-management toolkit, giving teams the ability to organize property data, manage units, track tasks, store documents, and streamline communication between staff and residents. The goal is to replace scattered apps with one simple, intuitive platform that handles everything from first inquiry &rarr; application &rarr; approval &rarr; ongoing management, all in the same ecosystem.
             </p>
+            <div className="pt-6">
+              <Link href="/admin">
+                <Button className="bg-[hsl(77_100%_26%)] hover:bg-[hsl(77_100%_20%)] text-white font-bold py-2 px-4 rounded">
+                  Go to Admin Dashboard
+                </Button>
+              </Link>
+            </div>
           </div>
           <div className="flex justify-center">
             <Image

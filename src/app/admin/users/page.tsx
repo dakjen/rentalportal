@@ -1,7 +1,7 @@
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, userRoleEnum } from "@/db/schema";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation"; // Corrected import for redirect
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   Card,
@@ -30,20 +30,18 @@ import { Input } from "@/components/ui/input";
 import { eq } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
 
-type UserRole = "admin" | "investor" | "owner" | "property_management";
-
 export default async function UsersPage({
   searchParams,
 }: {
   searchParams?: { status?: string; message?: string };
 }) {
   const allUsers = await db.select().from(users);
-  const params = searchParams ? await searchParams : {}; // Await searchParams
+  const params = searchParams ? await searchParams : {};
 
   async function updateUserRole(formData: FormData) {
     "use server";
     const userId = Number(formData.get("userId"));
-    const role = formData.get("role") as UserRole;
+    const role = formData.get("role") as "super_admin" | "admin" | "investor" | "owner" | "property_management" | "marketing";
 
     await db.update(users).set({ role }).where(eq(users.id, userId));
     revalidatePath("/admin/users");
@@ -72,12 +70,15 @@ export default async function UsersPage({
 
     if (dbUser.length > 0) {
       console.error("User already exists in database");
-      redirect("/admin/users?status=error&message=User already exists in database");
+      redirect(
+        "/admin/users?status=error&message=User already exists in database"
+      );
     }
 
     await db.insert(users).values({
       clerkId: clerkUser.id,
       email: clerkUser.emailAddresses[0].emailAddress,
+      role: "investor", // Assign a default role
     });
 
     redirect("/admin/users?status=success&message=User added successfully");
@@ -87,9 +88,13 @@ export default async function UsersPage({
     <div>
       <h1 className="text-2xl font-bold mb-4">User Management</h1>
       {params.message && (
-        <p className={`mb-4 p-2 rounded-md ${
-          params.status === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-        }`}>
+        <p
+          className={`mb-4 p-2 rounded-md ${
+            params.status === "success"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
           {params.message}
         </p>
       )}
@@ -127,7 +132,6 @@ export default async function UsersPage({
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Projects</TableHead>
-                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -149,6 +153,7 @@ export default async function UsersPage({
                               <SelectItem value="property_management">
                                 Property Management
                               </SelectItem>
+                              <SelectItem value="marketing">Marketing</SelectItem>
                             </SelectContent>
                           </Select>
                           <Button type="submit">Save</Button>

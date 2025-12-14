@@ -1,5 +1,5 @@
 CREATE TYPE "public"."question_type" AS ENUM('text', 'textarea', 'radio', 'checkbox', 'document_upload', 'secure_document_upload');--> statement-breakpoint
-CREATE TYPE "public"."user_role" AS ENUM('admin', 'investor', 'owner', 'property_management');--> statement-breakpoint
+CREATE TYPE "public"."user_role" AS ENUM('super_admin', 'admin', 'investor', 'owner', 'property_management', 'marketing');--> statement-breakpoint
 CREATE TABLE "application_forms" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,

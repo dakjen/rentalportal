@@ -28,8 +28,9 @@ export async function POST(req: Request) {
         await db.insert(users).values({
           clerkId: userId,
           email: clerkUser.emailAddresses[0].emailAddress,
+          role: "investor", // Assign a default role
         });
-        console.log("API /api/sync-user: User inserted into DB.");
+        console.log("API /api/sync-user: User inserted into DB with default investor role.");
       } else {
         console.error("API /api/sync-user: Clerk user not found.");
         return new NextResponse("Clerk user not found", { status: 404 });

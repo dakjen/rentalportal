@@ -1,0 +1,43 @@
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(
+  req: NextRequest,
+  context: { params: { userId: string } }
+) {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, Number(context.params.userId)),
+    });
+
+    if (!user) {
+      return new NextResponse("User not found", { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return new NextResponse("Error fetching user", { status: 500 });
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  context: { params: { userId: string } }
+) {
+  try {
+    const { role } = await req.json();
+
+    await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, Number(context.params.userId)));
+
+    return new NextResponse("User role updated successfully", { status: 200 });
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    return new NextResponse("Error updating user role", { status: 500 });
+  }
+}

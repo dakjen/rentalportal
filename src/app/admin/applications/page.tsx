@@ -24,13 +24,13 @@ interface UserInfo {
   id: number;
   clerkId: string;
   email: string;
-  role: "admin" | "investor" | "owner" | "property_management";
+  role: "super_admin" | "admin" | "investor" | "owner" | "property_management" | "marketing";
   projectUsers: { projectId: number; userId: number }[];
 }
 
 async function ProjectList({ user }: { user: UserInfo }) {
   let filteredProjects: InferSelectModel<typeof projects>[] = [];
-  if (user.role === "admin") {
+  if (user.role === "admin" || user.role === "super_admin") {
     filteredProjects = await db.select().from(projects);
   } else {
     const userProjectIds = user.projectUsers.map((pu) => pu.projectId);
@@ -77,8 +77,13 @@ async function ProjectList({ user }: { user: UserInfo }) {
 }
 
 async function FormList({ projectId, user }: { projectId: number; user: UserInfo }) {
+  console.log("--- FormList Component ---");
+  console.log("User:", JSON.stringify(user, null, 2));
+  console.log("Project ID:", projectId);
+
   // Authorization check
-  if (user.role !== "admin" && !user.projectUsers.some(pu => pu.projectId === projectId)) {
+  if (user.role !== "admin" && user.role !== "super_admin" && !user.projectUsers.some(pu => pu.projectId === projectId)) {
+    console.log("User is not authorized to view forms for this project.");
     return <div>Not authorized to view forms for this project.</div>;
   }
 
@@ -89,6 +94,8 @@ async function FormList({ projectId, user }: { projectId: number; user: UserInfo
     .select()
     .from(applicationForms)
     .where(eq(applicationForms.projectId, projectId));
+  
+  console.log("Forms fetched:", JSON.stringify(forms, null, 2));
 
   return (
     <Card>
@@ -138,7 +145,7 @@ async function ApplicationList({ formId, user }: { formId: number; user: UserInf
   });
 
   // Authorization check
-  if (!form || (user.role !== "admin" && !user.projectUsers.some(pu => pu.projectId === form.projectId))) {
+  if (!form || (user.role !== "admin" && user.role !== "super_admin" && !user.projectUsers.some(pu => pu.projectId === form.projectId))) {
     return <div>Not authorized to view applications for this form.</div>;
   }
 
@@ -210,6 +217,9 @@ export default async function ApplicationsPage({
   if (!dbUser) {
     return <div>User not found in DB</div>;
   }
+  
+  console.log("--- Applications Page ---");
+  console.log("DB User:", JSON.stringify(dbUser, null, 2));
 
   const { projectId, formId } = searchParams;
 

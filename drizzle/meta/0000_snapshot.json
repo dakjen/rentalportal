@@ -1,5 +1,5 @@
 {
-  "id": "343f9b38-aacd-4480-a593-2ee638d79aef",
+  "id": "eaaf0da2-77fc-4cac-96e1-ecc531492654",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -383,10 +383,12 @@
       "name": "user_role",
       "schema": "public",
       "values": [
+        "super_admin",
         "admin",
         "investor",
         "owner",
-        "property_management"
+        "property_management",
+        "marketing"
       ]
     }
   },

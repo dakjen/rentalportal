@@ -25,12 +25,13 @@ export default async function AdminLayout({
   if (!dbUser) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p>Loading user data...</p> {/* Replace with a proper spinner later if needed */}
+        <p>Loading user data...</p>{" "}
+        {/* Replace with a proper spinner later if needed */}
       </div>
     );
   }
 
-  if (dbUser.role !== "admin") {
+  if (dbUser.role !== "super_admin") {
     redirect("/"); // Redirect to homepage or an unauthorized page
   }
 

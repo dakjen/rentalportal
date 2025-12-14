@@ -46,13 +46,18 @@ export default async function FormsPage() {
   if (!dbUser) {
     return <div>User not found in DB</div>;
   }
+  
+  console.log("--- Forms Page ---");
+  console.log("DB User:", JSON.stringify(dbUser, null, 2));
 
   let userProjectIds: number[] = [];
-  if (dbUser.role !== "admin") {
+  const isSuperAdminOrAdmin = dbUser.role === "admin" || dbUser.role === "super_admin";
+
+  if (!isSuperAdminOrAdmin) {
     userProjectIds = dbUser.projectUsers.map((pu) => pu.projectId);
   }
 
-  const allProjects = await (dbUser.role === "admin"
+  const allProjects = await (isSuperAdminOrAdmin
     ? db.select().from(projects)
     : db.select().from(projects).where(inArray(projects.id, userProjectIds)));
 
@@ -67,10 +72,12 @@ export default async function FormsPage() {
     .from(applicationForms)
     .leftJoin(projects, eq(applicationForms.projectId, projects.id))
     .where(
-      dbUser.role === "admin"
+      isSuperAdminOrAdmin
         ? undefined
         : inArray(applicationForms.projectId, userProjectIds)
     );
+    
+  console.log("Forms fetched:", JSON.stringify(forms, null, 2));
 
   async function createForm(formData: FormData) {
     "use server";
@@ -97,7 +104,7 @@ export default async function FormsPage() {
 
     // Check if user is authorized for this project
     if (
-      currentUserDb.role !== "admin" &&
+      currentUserDb.role !== "admin" && currentUserDb.role !== "super_admin" &&
       !currentUserDb.projectUsers.some((pu) => pu.projectId === projectId)
     ) {
       console.error("User not authorized to create form for this project.");

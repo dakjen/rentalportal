@@ -31,8 +31,11 @@ export default async function ProjectsPage() {
     return <div>User not found in DB</div>;
   }
 
+  console.log("--- Projects Page ---");
+  console.log("DB User:", JSON.stringify(dbUser, null, 2));
+
   let filteredProjects: InferSelectModel<typeof projects>[] = [];
-  if (dbUser.role === "admin") {
+  if (dbUser.role === "admin" || dbUser.role === "super_admin") {
     filteredProjects = await db.select().from(projects);
   } else {
     const userProjectIds = dbUser.projectUsers.map((pu) => pu.projectId);
@@ -40,6 +43,8 @@ export default async function ProjectsPage() {
       filteredProjects = await db.select().from(projects).where(inArray(projects.id, userProjectIds));
     }
   }
+  
+  console.log("Filtered Projects:", JSON.stringify(filteredProjects, null, 2));
 
   async function createProject(formData: FormData) {
     "use server";
@@ -54,7 +59,7 @@ export default async function ProjectsPage() {
       where: eq(users.clerkId, currentUserId),
     });
 
-    if (currentUserDb?.role !== "admin") {
+    if (currentUserDb?.role !== "admin" && currentUserDb?.role !== "super_admin") {
       console.error("Only admins can create projects.");
       return;
     }
@@ -71,7 +76,7 @@ export default async function ProjectsPage() {
     <div>
       <h1 className="text-2xl font-bold mb-4">Projects</h1>
       <div className="flex flex-col gap-8">
-        {dbUser.role === "admin" && (
+        {(dbUser.role === "admin" || dbUser.role === "super_admin") && (
           <div>
             <Card>
               <CardHeader>
