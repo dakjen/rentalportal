@@ -71,7 +71,7 @@ export default async function RootLayout({
                 </Link>
 
                 <div className="flex items-center gap-4">
-                  {dbUser?.role === "admin" && (
+                  {(dbUser?.role === "admin" || dbUser?.role === "super_admin") && (
                     <Link href="/admin">
                       <Button variant="ghost">Admin Tools</Button>
                     </Link>

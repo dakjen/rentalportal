@@ -66,6 +66,13 @@ export default async function AdminLayout({
                   <Link href="/admin/users">Users</Link>
                 </Button>
               </li>
+              {dbUser.role === 'super_admin' && (
+                <li>
+                  <Button asChild variant="ghost" className="w-full justify-start">
+                    <Link href="/admin/super-admin">Super Admin</Link>
+                  </Button>
+                </li>
+              )}
             </ul>
           </nav>
         </Card>

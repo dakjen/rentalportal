@@ -57,8 +57,17 @@ export default async function UsersPage({
     });
 
     if (clerkUsers.data.length === 0) {
-      console.error("User not found in Clerk");
-      redirect("/admin/users?status=error&message=User not found in Clerk");
+      console.log("User not found in Clerk, sending invitation...");
+      try {
+        await clerk.invitations.createInvitation({
+          emailAddress: email,
+        });
+        redirect("/admin/users?status=success&message=Invitation sent successfully. The user will be added to the system upon sign-up.");
+      } catch (error) {
+        console.error("Error creating invitation:", error);
+        redirect("/admin/users?status=error&message=Failed to send invitation. Please check the email address.");
+      }
+      return;
     }
 
     const clerkUser = clerkUsers.data[0];
@@ -81,7 +90,7 @@ export default async function UsersPage({
       role: "investor", // Assign a default role
     });
 
-    redirect("/admin/users?status=success&message=User added successfully");
+    redirect("/admin/users?status=success&message=Existing user added successfully");
   }
 
   return (
@@ -104,8 +113,7 @@ export default async function UsersPage({
             <CardHeader>
               <CardTitle>Add New User</CardTitle>
               <CardDescription>
-                Add a new user to the system by their email address. The user
-                must already have an account.
+                Add a new user by email. If the user doesn't have an account, an invitation will be sent.
               </CardDescription>
             </CardHeader>
             <CardContent>

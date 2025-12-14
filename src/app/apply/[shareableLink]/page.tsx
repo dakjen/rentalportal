@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "@/db";
 import {
   applicationForms,
-  applications,
   applicationQuestions,
   questions,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import {
   Card,
   CardContent,
@@ -27,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { generateUploadDropzone } from "@uploadthing/react";
 import type { OurFileRouter } from "@/app/api/uploadthing/core";
+import { submitApplication } from "./actions";
+import { useRouter } from "next/navigation";
 
 const UploadDropzone = generateUploadDropzone<OurFileRouter>();
 
@@ -38,12 +38,13 @@ type PageProps = {
 
 export default function ApplyPage({ params }: PageProps) {
   const { shareableLink } = params;
+  const router = useRouter();
   const [form, setForm] = useState<any>(null);
   const [formQuestions, setFormQuestions] = useState<any[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchFormData = async () => {
       const formRes = await db
         .select()
         .from(applicationForms)
@@ -62,16 +63,14 @@ export default function ApplyPage({ params }: PageProps) {
         .innerJoin(questions, eq(applicationQuestions.questionId, questions.id))
         .orderBy(applicationQuestions.order);
       setFormQuestions(questionsRes);
-    }
-    fetchData();
+    };
+
+    fetchFormData();
   }, [shareableLink]);
 
-  if (!form) {
-    return <div>Form not found</div>;
-  }
-
-  async function submitApplication(formData: FormData) {
-    "use server";
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
 
     const answers = formQuestions.reduce((acc, { questions: question }) => {
       const answer = formData.get(String(question.id));
@@ -80,17 +79,18 @@ export default function ApplyPage({ params }: PageProps) {
       }
       return acc;
     }, {} as Record<number, FormDataEntryValue>);
-    
+
     // Add uploaded file URLs to answers
     Object.assign(answers, uploadedFiles);
 
-    await db.insert(applications).values({
-      formId: form.id,
-      answers,
-    });
+    await submitApplication(form.id, answers, shareableLink);
+    
+    // Redirect to a thank you page or show a success message
+    router.push("/thank-you"); 
+  };
 
-    revalidatePath(`/apply/${shareableLink}`);
-    // You might want to redirect to a "thank you" page
+  if (!form) {
+    return <div>Loading form...</div>;
   }
 
   return (
@@ -103,7 +103,7 @@ export default function ApplyPage({ params }: PageProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={submitApplication} className="space-y-8">
+          <form onSubmit={handleFormSubmit} className="space-y-8">
             {formQuestions.map(({ questions: question }) => (
               <div key={question.id} className="space-y-2">
                 <Label htmlFor={String(question.id)}>{question.text}</Label>
@@ -143,7 +143,7 @@ export default function ApplyPage({ params }: PageProps) {
                     name={String(question.id)}
                   >
                     {Array.isArray(question.options) &&
-                      question.options.map((option) => (
+                      question.options.map((option: string) => (
                         <div key={option} className="flex items-center space-x-2">
                           <RadioGroupItem value={option} id={`${question.id}-${option}`} />
                           <Label htmlFor={`${question.id}-${option}`}>
@@ -156,7 +156,7 @@ export default function ApplyPage({ params }: PageProps) {
                 {question.type === "checkbox" && (
                   <div>
                     {Array.isArray(question.options) &&
-                      question.options.map((option) => (
+                      question.options.map((option: string) => (
                         <div key={option} className="flex items-center space-x-2">
                           <Checkbox
                             id={`${question.id}-${option}`}
