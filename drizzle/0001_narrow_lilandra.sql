@@ -1,0 +1,1 @@
+ALTER TABLE "applications" ADD COLUMN "file_url" text;

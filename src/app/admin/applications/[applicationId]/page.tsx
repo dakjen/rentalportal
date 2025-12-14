@@ -50,6 +50,7 @@ export default async function ApplicationPage({ params }: PageProps) {
     .orderBy(applicationQuestions.order);
 
   const answers = application.applications.answers as Record<number, string>;
+  const fileUrl = application.applications.fileUrl;
 
   return (
     <div>
@@ -75,11 +76,26 @@ export default async function ApplicationPage({ params }: PageProps) {
               {formQuestions.map(({ questions: question }) => (
                 <TableRow key={question.id}>
                   <TableCell>{question.text}</TableCell>
-                  <TableCell>{answers[question.id] || "Not answered"}</TableCell>
+                  <TableCell>
+                    {question.type === "secure_document_upload" || question.type === "document_upload" ? (
+                      <a href={answers[question.id]} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        View Document
+                      </a>
+                    ) : (
+                      answers[question.id] || "Not answered"
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          {fileUrl && (
+            <div className="pt-4">
+              <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                <Button>View Main Document</Button>
+              </a>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

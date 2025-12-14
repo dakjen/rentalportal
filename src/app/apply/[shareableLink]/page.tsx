@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { db } from "@/db";
 import {
   applicationForms,
@@ -22,31 +25,50 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 
+import { generateUploadDropzone } from "@uploadthing/react";
+import type { OurFileRouter } from "@/app/api/uploadthing/core";
+
+const UploadDropzone = generateUploadDropzone<OurFileRouter>();
+
 type PageProps = {
   params: {
     shareableLink: string;
   };
 };
 
-export default async function ApplyPage({ params }: PageProps) {
+export default function ApplyPage({ params }: PageProps) {
   const { shareableLink } = params;
+  const [form, setForm] = useState<any>(null);
+  const [formQuestions, setFormQuestions] = useState<any[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, string>>({});
 
-  const form = await db
-    .select()
-    .from(applicationForms)
-    .where(eq(applicationForms.shareableLink, shareableLink))
-    .then((res) => res[0]);
+  useEffect(() => {
+    async function fetchData() {
+      const formRes = await db
+        .select()
+        .from(applicationForms)
+        .where(eq(applicationForms.shareableLink, shareableLink))
+        .then((res) => res[0]);
+
+      if (!formRes) {
+        return;
+      }
+      setForm(formRes);
+
+      const questionsRes = await db
+        .select()
+        .from(applicationQuestions)
+        .where(eq(applicationQuestions.formId, formRes.id))
+        .innerJoin(questions, eq(applicationQuestions.questionId, questions.id))
+        .orderBy(applicationQuestions.order);
+      setFormQuestions(questionsRes);
+    }
+    fetchData();
+  }, [shareableLink]);
 
   if (!form) {
     return <div>Form not found</div>;
   }
-
-  const formQuestions = await db
-    .select()
-    .from(applicationQuestions)
-    .where(eq(applicationQuestions.formId, form.id))
-    .innerJoin(questions, eq(applicationQuestions.questionId, questions.id))
-    .orderBy(applicationQuestions.order);
 
   async function submitApplication(formData: FormData) {
     "use server";
@@ -58,6 +80,9 @@ export default async function ApplyPage({ params }: PageProps) {
       }
       return acc;
     }, {} as Record<number, FormDataEntryValue>);
+    
+    // Add uploaded file URLs to answers
+    Object.assign(answers, uploadedFiles);
 
     await db.insert(applications).values({
       formId: form.id,
@@ -96,10 +121,20 @@ export default async function ApplyPage({ params }: PageProps) {
                   />
                 )}
                 {(question.type === "document_upload" || question.type === "secure_document_upload") && (
-                  <Input
-                    type="file"
-                    id={String(question.id)}
-                    name={String(question.id)}
+                  <UploadDropzone
+                    endpoint="documentUploader"
+                    onClientUploadComplete={(res) => {
+                      if (res) {
+                        setUploadedFiles(prev => ({
+                          ...prev,
+                          [question.id]: res[0].url
+                        }));
+                        alert("Upload Completed");
+                      }
+                    }}
+                    onUploadError={(error: Error) => {
+                      alert(`ERROR! ${error.message}`);
+                    }}
                   />
                 )}
                 {question.type === "radio" && (

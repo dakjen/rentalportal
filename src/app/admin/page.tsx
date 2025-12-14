@@ -5,8 +5,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { db } from "@/db";
+import { applications, applicationForms } from "@/db/schema";
+import { count } from "drizzle-orm";
 
 export default async function AdminPage() {
+  const applicationCount = await db.select({ value: count() }).from(applications);
+  const formCount = await db.select({ value: count() }).from(applicationForms);
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
@@ -18,7 +24,7 @@ export default async function AdminPage() {
             <CardDescription>Number of applications received</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">0</p>
+            <p className="text-3xl font-bold">{applicationCount[0].value}</p>
           </CardContent>
         </Card>
         <Card>
@@ -27,7 +33,7 @@ export default async function AdminPage() {
             <CardDescription>Number of application forms</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">0</p>
+            <p className="text-3xl font-bold">{formCount[0].value}</p>
           </CardContent>
         </Card>
       </div>

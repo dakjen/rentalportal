@@ -112,6 +112,7 @@ export const applications = pgTable("applications", {
     .references(() => applicationForms.id)
     .notNull(),
   answers: jsonb("answers").notNull(),
+  fileUrl: text("file_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
