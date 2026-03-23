@@ -59,6 +59,9 @@ export default async function RootLayout({
     <ClerkProvider
       appearance={{
         baseTheme: dark,
+        variables: {
+          applicationName: "ResidentFlow",
+        },
       }}
     >
       <html lang="en">
